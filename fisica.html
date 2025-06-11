@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ecuación de Continuidad</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(to bottom right, #e0f7fa, #ffffff);
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      transition: 0.3s ease;
+    }
+
+    select:focus, input:focus {
+      border-color: #007bff;
+      outline: none;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1.1em;
+    }
+
+    @media (max-width: 600px) {
+      select, input, button {
+        font-size: 0.9em;
+      }
+    }
+
+    .disabled {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Continuidad</h1>
+
+    <label for="calcular">¿Qué variable deseas calcular?</label>
+    <select id="calcular" onchange="actualizarCampos()">
+      <option value="">-- Selecciona --</option>
+      <option value="A1">Área 1 (A₁)</option>
+      <option value="A2">Área 2 (A₂)</option>
+      <option value="v1">Velocidad 1 (v₁)</option>
+      <option value="v2">Velocidad 2 (v₂)</option>
+    </select>
+
+    <hr />
+
+    <label>Área 1</label>
+    <select id="tipo1" onchange="actualizarCampos()">
+      <option value="">-- Tipo --</option>
+      <option value="diametro">Diámetro</option>
+      <option value="radio">Radio</option>
+      <option value="area">Área directa</option>
+    </select>
+    <input type="number" id="valor1" placeholder="Valor de área 1" />
+    <select id="unidad1">
+      <option value="m">metros</option>
+      <option value="cm">centímetros</option>
+    </select>
+
+    <label>Área 2</label>
+    <select id="tipo2" onchange="actualizarCampos()">
+      <option value="">-- Tipo --</option>
+      <option value="diametro">Diámetro</option>
+      <option value="radio">Radio</option>
+      <option value="area">Área directa</option>
+    </select>
+    <input type="number" id="valor2" placeholder="Valor de área 2" />
+    <select id="unidad2">
+      <option value="m">metros</option>
+      <option value="cm">centímetros</option>
+    </select>
+
+    <label for="vel1">Velocidad 1 (m/s)</label>
+    <input type="number" id="vel1" />
+
+    <label for="vel2">Velocidad 2 (m/s)</label>
+    <input type="number" id="vel2" />
+
+    <button onclick="calcular()">Calcular</button>
+
+    <div class="resultado" id="resultado"></div>
+  </div>
+
+  <script>
+    function convertir(valor, unidad) {
+      return unidad === "cm" ? valor / 100 : valor;
+    }
+
+    function calcularArea(valor, tipo) {
+      const radio = tipo === "diametro" ? valor / 2 : valor;
+      return Math.PI * Math.pow(radio, 2);
+    }
+
+    function actualizarCampos() {
+      const aCalcular = document.getElementById("calcular").value;
+      const campos = {
+        A1: ["valor1", "tipo1", "unidad1"],
+        A2: ["valor2", "tipo2", "unidad2"],
+        v1: ["vel1"],
+        v2: ["vel2"]
+      };
+
+      for (const key in campos) {
+        campos[key].forEach(id => {
+          document.getElementById(id).disabled = false;
+          document.getElementById(id).classList.remove("disabled");
+        });
+      }
+
+      if (aCalcular && campos[aCalcular]) {
+        campos[aCalcular].forEach(id => {
+          document.getElementById(id).value = "";
+          document.getElementById(id).disabled = true;
+          document.getElementById(id).classList.add("disabled");
+        });
+      }
+    }
+
+    function calcular() {
+      const objetivo = document.getElementById("calcular").value;
+      if (!objetivo) {
+        document.getElementById("resultado").innerText = "Selecciona una variable a calcular.";
+        return;
+      }
+
+      const tipo1 = document.getElementById("tipo1").value;
+      const tipo2 = document.getElementById("tipo2").value;
+      const valor1 = parseFloat(document.getElementById("valor1").value);
+      const valor2 = parseFloat(document.getElementById("valor2").value);
+      const unidad1 = document.getElementById("unidad1").value;
+      const unidad2 = document.getElementById("unidad2").value;
+      const vel1 = parseFloat(document.getElementById("vel1").value);
+      const vel2 = parseFloat(document.getElementById("vel2").value);
+
+      let A1 = !isNaN(valor1) ? (tipo1 === "area" ? valor1 : calcularArea(convertir(valor1, unidad1), tipo1)) : null;
+      let A2 = !isNaN(valor2) ? (tipo2 === "area" ? valor2 : calcularArea(convertir(valor2, unidad2), tipo2)) : null;
+
+      let resultado = "";
+
+      try {
+        switch (objetivo) {
+          case "A1":
+            if (isNaN(A2) || isNaN(vel1) || isNaN(vel2)) throw "Faltan datos";
+            A1 = (A2 * vel2) / vel1;
+            resultado = `Área 1 (A₁) = ${A1.toFixed(4)} m² (${(A1 * 10000).toFixed(2)} cm²)`;
+            break;
+          case "A2":
+            if (isNaN(A1) || isNaN(vel1) || isNaN(vel2)) throw "Faltan datos";
+            A2 = (A1 * vel1) / vel2;
+            resultado = `Área 2 (A₂) = ${A2.toFixed(4)} m² (${(A2 * 10000).toFixed(2)} cm²)`;
+            break;
+          case "v1":
+            if (isNaN(A1) || isNaN(A2) || isNaN(vel2)) throw "Faltan datos";
+            resultado = `Velocidad 1 (v₁) = ${(A2 * vel2 / A1).toFixed(4)} m/s`;
+            break;
+          case "v2":
+            if (isNaN(A1) || isNaN(A2) || isNaN(vel1)) throw "Faltan datos";
+            resultado = `Velocidad 2 (v₂) = ${(A1 * vel1 / A2).toFixed(4)} m/s`;
+            break;
+        }
+      } catch (e) {
+        resultado = "Por favor, llena los 3 valores requeridos correctamente.";
+      }
+
+      document.getElementById("resultado").innerText = resultado;
+    }
+  </script>
+</body>
+</html>
