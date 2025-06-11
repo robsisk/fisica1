@@ -1,2 +1,0 @@
-# fisica1
-aaaaaaaaa
